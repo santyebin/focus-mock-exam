@@ -1,0 +1,45 @@
+/* Data Insights — Graphics Interpretation, set 2 (original questions). */
+(function (root, R) {
+  const GM = (root.GM = root.GM || {});
+  const B = (GM.BANK = GM.BANK || {});
+  const PROMPT = R`Use the drop-down menus to complete each statement according to the information presented in the graph.`;
+  B.gi = (B.gi || []).concat([
+    { id: 'GI08', sub: 'Line graph', d: 6,
+      intro: R`The graph shows the monthly active users of two apps from January through June.`, prompt: PROMPT,
+      chart: { kind: 'line', title: 'Monthly active users', yLabel: 'Users (millions)', categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'], series: [{ name: 'App A', values: [4.0, 4.6, 5.3, 6.1, 7.0, 8.0] }, { name: 'App B', values: [9.0, 8.8, 8.5, 8.3, 8.1, 7.9] }], yMin: 0, yMax: 10, yStep: 2 },
+      st: [{ t: R`App A's monthly active users first exceeded App B's in [[]].`, opts: [R`April`, R`May`, R`June`, R`none of these months`], a: 2 },
+        { t: R`From January to June, App A's monthly active users grew at an average monthly rate closest to [[]].`, opts: [R`10%`, R`15%`, R`20%`, R`25%`], a: 1 }],
+      ex: R`June: 8.0 vs 7.9 million is the first month A leads. A doubled over five monthly steps: \(2^{1/5} \approx 1.149\), about 15 percent a month (20 percent compounded would give \(1.2^5 \approx 2.5\)).` },
+    { id: 'GI09', sub: 'Bar chart', d: 1,
+      intro: R`The graph shows the number of books a bookstore sold in March, by genre.`, prompt: PROMPT,
+      chart: { kind: 'bar', title: 'Books sold in March', yLabel: 'Books sold', categories: ['Fiction', 'Mystery', 'Biography', 'Science', "Children's"], series: [{ name: 'Books', values: [420, 310, 140, 120, 260] }], yMin: 0, yMax: 450, yStep: 50 },
+      st: [{ t: R`The genre with the greatest number of books sold was [[]].`, opts: [R`Fiction`, R`Mystery`, R`Children's`, R`Biography`], a: 0 },
+        { t: R`The number of fiction books sold was [[]] times the number of biographies sold.`, opts: [R`2`, R`2.5`, R`3`, R`3.5`], a: 2 },
+      ],
+      ex: R`Fiction is the tallest bar at 420. 420 ÷ 140 = 3.` },
+    { id: 'GI10', sub: 'Grouped bar chart', d: 4,
+      intro: R`The graph shows a company's revenue in four regions in the first two quarters of the year.`, prompt: PROMPT,
+      chart: { kind: 'groupbar', title: 'Revenue by region', yLabel: 'Revenue ($ millions)', categories: ['North', 'South', 'East', 'West'], series: [{ name: 'Q1', values: [30, 24, 40, 18] }, { name: 'Q2', values: [36, 22, 50, 27] }], yMin: 0, yMax: 60, yStep: 10 },
+      st: [{ t: R`The region with the greatest percent increase in revenue from Q1 to Q2 was [[]].`, opts: [R`North`, R`South`, R`East`, R`West`], a: 3 },
+        { t: R`The company's total revenue in Q2 was approximately [[]] greater than in Q1.`, opts: [R`8%`, R`12%`, R`20%`, R`25%`], a: 2 }],
+      ex: R`Increases: North 20%, South −8%, East 25%, West 50%. Totals: Q1 112, Q2 135, an increase of about 20.5 percent.` },
+    { id: 'GI11', sub: 'Scatter plot', d: 4,
+      intro: R`Each point in the scatter plot represents one of 10 car models, showing the model's weight and its fuel economy.`, prompt: PROMPT,
+      chart: { kind: 'scatter', title: 'Weight and fuel economy, 10 car models', xLabel: 'Weight (hundreds of kg)', yLabel: 'Fuel economy (km per liter)', points: [[10, 18.5], [11, 17.2], [12, 16.8], [13, 15.1], [14, 14.6], [15, 13.9], [16, 12.2], [17, 11.8], [18, 10.6], [19, 10.1]], xMin: 8, xMax: 20, xStep: 2, yMin: 8, yMax: 20, yStep: 2 },
+      st: [{ t: R`The relationship between weight and fuel economy for these models is best described as [[]].`, opts: [R`strongly negative`, R`weakly negative`, R`approximately zero`, R`strongly positive`], a: 0 },
+        { t: R`Of the models weighing at least 1,500 kilograms, [[]] had fuel economy greater than 12 kilometers per liter.`, opts: [R`1`, R`2`, R`3`, R`4`], a: 1 }],
+      ex: R`The points fall steadily from left to right with little scatter. Models at 15 or more hundred kg: 13.9, 12.2, 11.8, 10.6, 10.1 km/L; two exceed 12.` },
+    { id: 'GI12', sub: 'Pie chart', d: 5,
+      intro: R`The chart shows how a university's 2025 operating budget of $480 million was divided.`, prompt: PROMPT,
+      chart: { kind: 'pie', title: '2025 operating budget: $480 million', slices: [{ label: 'Salaries', value: 55 }, { label: 'Facilities', value: 15 }, { label: 'Research', value: 12 }, { label: 'Student services', value: 8 }, { label: 'Administration', value: 6 }, { label: 'Other', value: 4 }] },
+      st: [{ t: R`If the salaries budget rose by 6 percent in 2026 while every other category stayed the same in dollars, the total budget would rise by approximately [[]].`, opts: [R`3.3%`, R`4.5%`, R`6.0%`, R`8.2%`], a: 0 },
+        { t: R`The research budget was [[]] million more than the student services budget.`, opts: [R`$9.6`, R`$19.2`, R`$28.8`, R`$57.6`], a: 1 }],
+      ex: R`A 6% rise in a category that is 55% of the budget adds 0.55 × 6% = 3.3% to the total. Research minus student services is 4% of $480 million = $19.2 million.` },
+    { id: 'GI13', sub: 'Line graph', d: 6,
+      intro: R`The graph shows the percentage of Country K's electricity that was generated from solar and from wind each year from 2019 through 2025.`, prompt: PROMPT,
+      chart: { kind: 'line', title: 'Share of electricity generation', yLabel: 'Share of total generation (%)', categories: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'], series: [{ name: 'Solar', values: [2, 3, 4, 6, 8, 11, 14] }, { name: 'Wind', values: [9, 10, 11, 12, 13, 14, 15] }], yMin: 0, yMax: 16, yStep: 2 },
+      st: [{ t: R`The first year in which solar's share was more than half of wind's share was [[]].`, opts: [R`2021`, R`2022`, R`2023`, R`2024`], a: 2 },
+        { t: R`If total electricity generation rose by 10 percent from 2024 to 2025, the amount generated from solar rose by approximately [[]].`, opts: [R`31%`, R`40%`, R`45%`, R`54%`], a: 1 }],
+      ex: R`2022: 6 is exactly half of 12, not more; 2023: 8 of 13 is more than half. Solar's amount went from 11% of T to 14% of 1.1T: 15.4 ÷ 11 = 1.4, a 40 percent rise.` },
+  ]);
+})(typeof window !== 'undefined' ? window : globalThis, String.raw);

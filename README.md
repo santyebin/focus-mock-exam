@@ -40,9 +40,16 @@ GM.App.debug.skipTime(40 * 60000) // jump the section clock forward 40 minutes
 ## Check the engine
 
 ```bash
-node tools/validate-bank.js   # structure of every question: keys, choices, math delimiters, answer-position balance
+node tools/validate-bank.js   # quality gate (below); exits 1 on any problem, and the deploy runs it first
 node tools/simulate.js        # simulated candidates: score recovery, blueprint, exposure, totals vs GMAC percentiles
 ```
+
+The quality gate holds every question to real-exam conventions, so a flawed question cannot reach the live site:
+
+* **Answer keys recomputed:** every numeric Problem Solving answer is computed independently in `tools/answer-checks.js` and must equal the keyed choice, with no other choice of the same value. The 8 non-numeric ones (Roman-numeral, interval, list) need human review.
+* **No length giveaways:** in Critical Reasoning and Reading Comprehension, the correct answer must be the longest choice in 10–30% of questions (the real exam is about 20%), the shortest in no more than 35%, and never more than 1.5× the average wrong answer.
+* **Real-exam lengths:** CR arguments 45–140 words; RC passages 200–320 words (short) or 300–460 (long).
+* **Conventions:** numeric choices in ascending order, answer positions A–E each between 8% and 35% within a type, and no near-duplicate questions.
 
 The latest simulation of 1,500 candidates reproduces GMAC's total-score percentiles within about 3.5 points at every checkpoint (for example 655 → 88.6 simulated vs 89.6 official, 705 → 97.5 vs 97.5), every section meets its content blueprint, and every one of the 300 questions gets used.
 
@@ -113,7 +120,7 @@ Append objects to the arrays in `data/`. Text fields use `String.raw` templates 
        { id: 'MSR04-2', kind: 'YN', sub: '...', d: 4, q: R`...`, labels: [R`Yes`, R`No`], st: [{ t: R`...`, a: 0 }, /* 3 */], ex: R`...` }] }
 ```
 
-Run `node tools/validate-bank.js` after editing, and `node tools/simulate.js` after adding many questions.
+For every new numeric Problem Solving question, add an independent computation of its answer to `tools/answer-checks.js` (work it out from the question's numbers, not by typing the answer). Write wrong answers that are as long and specific as the right one, each built on a real error (out of scope, reversed, too strong, half right). Run `node tools/validate-bank.js` after editing, and `node tools/simulate.js` after adding many questions.
 
 ## Known limits
 

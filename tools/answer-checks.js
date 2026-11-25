@@ -55,6 +55,16 @@ module.exports.CHECKS = {
   QA48: '(180 / 3) * (4 + 20/60)',
   QA49: '(() => { let c = 0; for (let n = 2; n <= 30; n++) { let f = 1n; for (let k = 1n; k < BigInt(n); k++) f *= k; if (f % BigInt(n) !== 0n) c++; } return c; })()',
   QA50: '(() => { const p = [0, 1, 2, 3, 4]; let left = 0, total = 0; const perm = (a, k) => { if (k === a.length) { total++; const ia = a.indexOf(0), ib = a.indexOf(1); if (ia < ib - 1) left++; return; } for (let i = k; i < a.length; i++) { [a[k], a[i]] = [a[i], a[k]]; perm(a, k + 1); [a[k], a[i]] = [a[i], a[k]]; } }; perm(p, 0); return left / total; })()',
+  QA51: 'range(10000, 99999).filter(n => { const d = String(n).split("").map(Number); return d.every((x, i) => i === 0 || x > d[i - 1]) || d.every((x, i) => i === 0 || x < d[i - 1]); }).length',
+  QA52: '(() => { let hit = 0, all = 0; for (let m = 0; m < 1024; m++) { const bits = range(0, 9).map(i => (m >> i) & 1); if (bits.reduce((s, b) => s + b, 0) !== 5) continue; all++; let reds = 0, at = -1; bits.forEach((b, i) => { if (b && ++reds === 3 && at < 0) at = i; }); if (at === 4) hit++; } return hit / all; })()',
+  QA53: '(() => { let best = -1; for (let a = 1; a <= 8; a++) for (let b = a; b <= 8; b++) for (let c = b; c <= 8; c++) { const d = 16 - c; if (d < c) continue; for (let e = d; e <= 60; e++) { const f = 60 - (a + b + c + d + e); if (f < e) break; const L = [a, b, c, d, e, f], cnt = {}; L.forEach(x => (cnt[x] = (cnt[x] || 0) + 1)); const top = Math.max(...Object.values(cnt)); const modes = Object.keys(cnt).filter(k => cnt[k] === top); if (modes.length === 1 && modes[0] === "6") best = Math.max(best, f); } } return best; })()',
+  QA54: 'range(1, 1000).filter(n => (n * n + 20) % (n + 2) === 0).reduce((s, n) => s + n, 0)',
+  QA55: '(() => { const out = new Set(); const perm = (s, rest) => { if (!rest.length) { out.add(s); return; } for (let i = 0; i < rest.length; i++) perm(s + rest[i], rest.slice(0, i) + rest.slice(i + 1)); }; perm("", "LEVEL"); return [...out].filter(w => !/(.)\\1/.test(w)).length; })()',
+  QA56: '(() => { const allThree = 20, exactlyTwo = (60 + 50 + 40) - 100 - 2 * allThree; return 100 - exactlyTwo - allThree; })()',
+  QA57: 'range(0, 31).filter(m => /111/.test(m.toString(2).padStart(5, "0"))).length / 32',
+  QA58: 'range(1, 100).find(t => Math.abs(1 / (t + 3) + 1 / (t + 12) - 1 / t) < 1e-12) + 3',
+  QA59: '(() => { const g = (a, b) => (b ? g(b, a % b) : a); return range(1, 100).filter(k => { let d = 180 / g(k, 180); while (d % 2 === 0) d /= 2; while (d % 5 === 0) d /= 5; return d === 1; }).length; })()',
+  QA60: 'range(0, 99).reduce((s, k) => (s + modpow(2, k, 7)) % 7, 0)',
 
   // ---------- Algebra ----------
   QG01: '(() => { const x = (11 + 7) / 3; return 2 * x + 1; })()',
@@ -110,4 +120,16 @@ module.exports.CHECKS = {
   QG54: 'range(102, 200).filter(n => n % 2 === 0).reduce((s, n) => s + n, 0)',
   QG55: '(() => { const s = Math.sqrt(14 + 2); return s ** 3 - 3 * s; })()',
   QG56: 'Math.cbrt(2 * 9 * 12)',
+  QG57: '(() => { const p = 3 * 2, q = 3 * (1 / 2); return (2 * q - p) / 3; })()', // f(2) + 2f(1/2) = p, f(1/2) + 2f(2) = q
+  QG58: '(() => { const out = new Set(); for (let a = 1; a < 47; a++) for (let b = 1; b < 47; b++) { const s = [a, b]; while (s.length < 7) s.push(s[s.length - 1] + s[s.length - 2]); if (s[6] === 47) out.add(s[4]); } return out.size === 1 ? [...out][0] : NaN; })()',
+  QG59: 'range(-50, 50).filter(x => Math.abs(x - 2) + Math.abs(x + 3) === 5).length',
+  QG60: 'Math.sqrt(7 + 4 * Math.sqrt(3)) - Math.sqrt(7 - 4 * Math.sqrt(3))',
+  QG61: '(() => { const f = x => x * x - 6 * x + 10; return range(-100, 100).filter(x => f(f(x)) < 5).length; })()',
+  QG62: '(() => { let m = -Infinity; for (let x = -10; x <= 10; x++) for (let y = -10; y <= 10; y++) if (x * x + y * y < 10) m = Math.max(m, x - 2 * y); return m; })()',
+  QG63: '(() => { for (let v = 3; v < 100; v++) for (let t = 2; t < 100; t++) { const d = v * t; if ((v + 3) * (t - 1) === d && (v - 2) * (t + 1) === d) return d; } })()',
+  QG64: '(() => { const fold = (s, D) => { const r = s % (2 * D); return r <= D ? r : 2 * D - r; }; for (let D = 13; D <= 100; D++) { let meets = 0, prev = -1; for (let i = 1; i <= 80000; i++) { const t = i / 10000, xp = fold(12 * t, D), xq = D - fold((D - 12) * t, D), gap = xp - xq; if (gap === 0 || (prev < 0) !== (gap < 0)) { if (++meets === 2) { if (Math.abs(D - xp - 6) < 0.01) return D; break; } } prev = gap === 0 ? -prev : gap; } } })()', // simulate both riders; second crossing must be 6 km from Q
+  QG65: 'range(1, 100).flatMap(x => range(1, 100).map(y => [x, y])).filter(([x, y]) => x * y + 2 * x + 3 * y === 94).length',
+  QG66: '(Math.log(3) / Math.log(2)) * (Math.log(16) / Math.log(9))',
+  QG67: 'range(-3, 3).flatMap(x => range(-3, 3).map(y => [x, y])).filter(([x, y]) => Math.abs(x + y) === Math.abs(x - y) + 2).length',
+  QG68: '(() => { let m = -Infinity; for (let i = -200; i <= 300; i++) for (let j = -100; j <= 400; j++) { const x = i / 100, y = j / 100; m = Math.max(m, x * y - x * x); } return m; })()',
 };

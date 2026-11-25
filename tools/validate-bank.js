@@ -128,7 +128,11 @@ function choiceValue(s) {
   if (t.endsWith('%')) t = t.slice(0, -1);
   return expr(t);
 }
-const { CHECKS, NOT_NUMERIC } = require('./answer-checks.js');
+const base = require('./answer-checks.js');
+// answer checks for questions in data/ext-*.js live in their own file so two people can add questions at once
+const ext = fs.existsSync(path.join(__dirname, 'answer-checks-ext.js')) ? require('./answer-checks-ext.js') : { CHECKS: {}, NOT_NUMERIC: [] };
+const CHECKS = Object.assign({}, base.CHECKS, ext.CHECKS);
+const NOT_NUMERIC = base.NOT_NUMERIC.concat(ext.NOT_NUMERIC || []);
 const helpers = {
   C: (n, k) => { let r = 1; for (let i = 1; i <= k; i++) r = (r * (n - k + i)) / i; return Math.round(r); },
   fact: (n) => { let r = 1; for (let i = 2; i <= n; i++) r *= i; return r; },
@@ -222,6 +226,37 @@ Object.values(byType).forEach((list) => {
     const jac = inter / (A.size + B.size - inter);
     if (jac > 0.6) err(list[a][0], `near-duplicate of ${list[b][0]} (overlap ${(jac * 100).toFixed(0)}%)`);
   }
+});
+
+// 3e. Every data file is loaded by the app and the editor (a file that is not listed silently drops its questions).
+['index.html', 'editor.html'].forEach((page) => {
+  const html = fs.readFileSync(path.join(root, page), 'utf8');
+  fs.readdirSync(path.join(root, 'data')).filter((f) => f.endsWith('.js')).forEach((f) => {
+    if (page === 'editor.html' && f === 'forms.js') return;
+    if (!html.includes('src="data/' + f + '"')) err(page, 'does not load data/' + f);
+  });
+});
+
+// 3f. Fixed mock forms: every question exists, each section has the real exam's length, no repeats within a form.
+(GM.FORMS || []).forEach((form) => {
+  const all = [];
+  ['quant', 'verbal', 'di'].forEach((key) => {
+    const ids = (form.sections || {})[key] || [];
+    if (ids.length !== GM.SECTIONS[key].n) err(form.id, `${key} has ${ids.length} questions (needs ${GM.SECTIONS[key].n}); run node tools/make-forms.js`);
+    ids.forEach((id) => {
+      if (!bank.items[id]) err(form.id, `uses ${id}, which is not in the bank; run node tools/make-forms.js`);
+      else if (bank.items[id].section !== key) err(form.id, `puts ${id} in the ${key} section`);
+      all.push(id);
+    });
+  });
+  if (new Set(all).size !== all.length) err(form.id, 'repeats a question');
+});
+
+// 3g. Sets must be big enough for the engine's slots (reading slots take 3 or 4 questions, multi-source slots 3);
+// a smaller set would leave the section short of its real-exam length.
+bank.units.forEach((u) => {
+  if (u.cat === 'RC' && u.items.length < 4) err(u.uid, `passage has ${u.items.length} questions (needs at least 4)`);
+  if (u.cat === 'MSR' && u.items.length < 3) err(u.uid, `multi-source set has ${u.items.length} questions (needs at least 3)`);
 });
 
 /* ---------------- report ---------------- */

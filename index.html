@@ -2,14 +2,17 @@
 <title>Focus Mock Exam</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="Adaptive practice test in the GMAT exam format: three 45-minute sections, Question Review & Edit, and 205-805 scoring.">
+<meta name="description" content="Adaptive practice in the GMAT exam format: full mocks with the real exam's screens, section tests, practice with explanations, a spaced-repetition mistake log, and progress tracking.">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&display=swap">
 <link rel="stylesheet" href="assets/app.css">
+<link rel="stylesheet" href="assets/features.css">
+<link rel="stylesheet" href="assets/exam.css">
 
 <div id="app" aria-live="polite">
-  <div class="screen"><div class="screen-inner"><div class="panel"><div class="eyebrow">Focus Mock Exam</div><p class="lede">Loading the exam…</p></div></div></div>
+  <div class="screen"><div class="screen-inner"><div class="panel"><div class="eyebrow">Focus Mock Exam</div><p class="lede">Loading…</p></div></div></div>
 </div>
 <noscript><p style="padding:16px">This practice exam needs JavaScript enabled.</p></noscript>
 
@@ -35,12 +38,31 @@
 <script src="data/di-gi-2.js"></script>
 <script src="data/di-msr.js"></script>
 <script src="data/di-msr-2.js"></script>
+<script src="data/ext-quant-1.js"></script>
+<script src="data/ext-quant-2.js"></script>
+<script src="data/ext-cr-1.js"></script>
+<script src="data/ext-cr-2.js"></script>
+<script src="data/ext-rc-1.js"></script>
+<script src="data/ext-rc-2.js"></script>
+<script src="data/ext-ds-1.js"></script>
+<script src="data/ext-ds-2.js"></script>
+<script src="data/ext-di-1.js"></script>
+<script src="data/ext-di-2.js"></script>
+<script src="data/ext-di-3.js"></script>
+<script src="data/forms.js"></script>
 <script src="src/mathtext.js"></script>
 <script src="src/charts.js"></script>
-<script src="src/tools.js"></script>
 <script src="src/render.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/store.js"></script>
+<script src="src/tools.js"></script>
+<script src="src/whiteboard.js"></script>
+<script src="src/exam.js"></script>
 <script src="src/report.js"></script>
-<script src="src/app.js"></script>
+<script src="src/practice.js"></script>
+<script src="src/mistakes.js"></script>
+<script src="src/progress.js"></script>
+<script src="src/main.js"></script>
 <script>
-  GM.App.init();
+  GM.Main.init();
 </script>

@@ -1,0 +1,127 @@
+/*
+ * Exam shell, modeled on the test-delivery interface: navy title bar (title, time remaining, question count),
+ * light toolbar (calculator, whiteboard), plain white question area, navy navigation bar (Bookmark for Review, Next).
+ * Always light, like the real exam. Sizes scale with the text-size setting (--ts).
+ */
+.gx {
+  --gx-navy: #12385f;
+  --gx-navy-2: #0c2a49;
+  --gx-tool: #e4ebf2;
+  --gx-tool-line: #b7c6d6;
+  --gx-text: #111111;
+  --gx-muted: #4d4d4d;
+  --gx-line: #c4c4c4;
+  --gx-hover: #f1f5f9;
+  --gx-link: #0d4d8c;
+  /* tokens consumed by the shared question renderer */
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f3f4f6; --fg: #111111; --muted: #4d4d4d; --line: #c4c4c4;
+  --accent: #12385f; --accent-fg: #ffffff; --accent-soft: #e9f0f7; --good: #1d7448; --good-soft: #e3f3ea; --bad: #b42318; --bad-soft: #fbe7e5;
+  color-scheme: light;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  background: #ffffff;
+  color: var(--gx-text);
+  font-family: Arial, Helvetica, "Helvetica Neue", sans-serif;
+  font-size: calc(15px * var(--ts, 1));
+}
+[data-contrast="high"] .gx { --gx-navy: #000000; --gx-navy-2: #000000; --gx-tool: #ffffff; --gx-tool-line: #000000; --gx-line: #000000; --gx-muted: #000000; --line: #000000; --accent: #000000; --accent-soft: #fff4b3; }
+.gx-gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+.gx-top { background: var(--gx-navy); color: #ffffff; }
+.gx-top .gx-gutter { display: flex; align-items: center; gap: 10px 18px; flex-wrap: wrap; min-height: 48px; padding-block: 6px; }
+.gx-title { font-weight: bold; font-size: 1.02em; margin-right: auto; min-width: 0; letter-spacing: 0.01em; }
+.gx-stat { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid transparent; color: #ffffff; cursor: pointer; padding: 4px 8px; border-radius: 3px; font: inherit; font-size: 0.95em; }
+.gx-stat:hover { border-color: rgba(255, 255, 255, 0.55); }
+.gx-stat .lbl { opacity: 0.9; }
+.gx-stat .val { font-weight: bold; font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: left; }
+.gx-stat[aria-pressed="false"] .val, .gx-stat[aria-pressed="false"] .lbl { display: none; }
+.gx-stat[aria-pressed="false"]::after { content: "Show"; font-size: 0.85em; opacity: 0.85; }
+.gx-stat.low .val { color: #ffc2b8; }
+
+.gx-tools { background: var(--gx-tool); border-bottom: 1px solid var(--gx-tool-line); }
+.gx-tools .gx-gutter { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; min-height: 40px; padding-block: 5px; }
+.gx-tool { display: inline-flex; align-items: center; gap: 6px; background: #ffffff; border: 1px solid var(--gx-tool-line); color: var(--gx-navy); font: bold 0.86em Arial, Helvetica, sans-serif; padding: 5px 12px; border-radius: 3px; cursor: pointer; }
+.gx-tool:hover { border-color: var(--gx-navy); }
+.gx-tool[aria-pressed="true"] { background: var(--gx-navy); color: #ffffff; border-color: var(--gx-navy); }
+.gx-tools .gx-note { margin-left: auto; color: var(--gx-muted); font-size: 0.86em; }
+
+.gx-main { overflow: auto; background: #ffffff; min-height: 0; }
+.gx-main:focus { outline: none; }
+.gx-content { padding-block: 26px 40px; max-width: 1080px; }
+.gx-content h1 { font-size: 1.35em; margin: 0 0 14px; }
+.gx-content h2 { font-size: 1.12em; margin: 22px 0 10px; }
+.gx-content p, .gx-content li { line-height: 1.6; }
+
+.gx-bottom { background: var(--gx-navy); color: #ffffff; }
+.gx-bottom .gx-gutter { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; min-height: 52px; padding-block: 6px; }
+.gx-bottom .group { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.gx-nav { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 3px; padding: 7px 14px; font: bold 0.93em Arial, Helvetica, sans-serif; cursor: pointer; min-height: 36px; }
+.gx-nav:hover:not(:disabled) { background: rgba(255, 255, 255, 0.14); }
+.gx-nav:disabled { opacity: 0.4; cursor: default; }
+.gx-nav.primary { background: #ffffff; color: var(--gx-navy); border-color: #ffffff; min-width: 96px; justify-content: center; }
+.gx-nav.primary:hover:not(:disabled) { background: #e9eef4; }
+.gx-bookmark { border-color: transparent; padding-left: 4px; }
+.gx-bookmark[aria-pressed="true"] .icon { color: #ffd166; }
+.gx .icon { width: 1.15em; height: 1.15em; flex: none; }
+.gx :focus-visible { outline: 3px solid #ffbf47; outline-offset: 1px; }
+
+/* question area: plain, like the real exam */
+.gx .q-text { font-size: 1em; line-height: 1.65; max-width: 78ch; }
+.gx .passage { font-size: 1em; line-height: 1.7; }
+.gx .passage p { text-indent: 0; margin-bottom: 1em; }
+.gx .choices { gap: 4px; margin-top: 16px; }
+.gx .choice { border: 0; border-radius: 0; padding: 7px 6px; gap: 10px; }
+.gx .choice:hover { background: var(--gx-hover); border: 0; }
+.gx .choice.sel { background: transparent; border: 0; }
+.gx .choice input { accent-color: var(--gx-navy); width: 17px; height: 17px; }
+.gx .split > .pane { padding-block: 22px 32px; }
+.gx .split > .pane:first-child { background: #ffffff; }
+.gx .split > .pane + .pane { border-left: 2px solid #9aa5b1; }
+.gx .grid-table th { background: #e4ebf2; }
+.gx .tab { background: #e4ebf2; }
+.gx .tab.on { color: var(--gx-navy); }
+.gx .q-label { color: var(--gx-navy); }
+
+/* review screen */
+.gx-review-meta { display: flex; gap: 24px; flex-wrap: wrap; align-items: baseline; margin-bottom: 14px; }
+.gx-review-meta b { font-variant-numeric: tabular-nums; }
+.gx-table-wrap { overflow-x: auto; max-width: 720px; }
+.gx-review { width: 100%; border-collapse: collapse; font-size: 0.96em; }
+.gx-review th, .gx-review td { border: 1px solid var(--gx-line); padding: 7px 12px; text-align: left; }
+.gx-review th { background: #e4ebf2; font-weight: bold; }
+.gx-review tbody tr { cursor: pointer; }
+.gx-review tbody tr:hover td, .gx-review tbody tr:focus td { background: var(--gx-hover); }
+.gx-review td.c { text-align: center; width: 1%; white-space: nowrap; }
+.gx-review .icon { color: var(--gx-navy); }
+
+/* generic exam screens */
+.gx-order { display: grid; gap: 6px; margin: 16px 0; max-width: 620px; }
+.gx-order label { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--gx-line); cursor: pointer; }
+.gx-order label:hover { background: var(--gx-hover); }
+.gx-order input { accent-color: var(--gx-navy); width: 17px; height: 17px; }
+.gx-callout { border: 1px solid var(--gx-line); background: #f6f8fa; padding: 12px 14px; max-width: 78ch; }
+.gx-warn { color: #a40000; font-weight: bold; }
+.gx-bigclock { font: bold 3.2em Arial, Helvetica, sans-serif; font-variant-numeric: tabular-nums; margin: 10px 0; }
+.gx-bigclock.over { color: #a40000; }
+.gx-scores { border-collapse: collapse; min-width: min(460px, 100%); margin: 8px 0 18px; }
+.gx-scores th, .gx-scores td { border: 1px solid var(--gx-line); padding: 9px 14px; text-align: left; }
+.gx-scores th { background: #e4ebf2; }
+.gx-scores td.n { font-variant-numeric: tabular-nums; font-weight: bold; text-align: right; }
+.gx-scores tr.total td { background: #f6f8fa; font-size: 1.08em; }
+
+/* exam dialogs */
+.gx-overlay { background: rgba(20, 30, 45, 0.45); }
+.gx-dialog { border-radius: 3px; max-width: 460px; background: #ffffff; color: #111111; font-family: Arial, Helvetica, sans-serif; }
+.gx-dialog header { background: #12385f; color: #ffffff; font-weight: bold; padding: 10px 16px; }
+.gx-dialog .body { padding: 18px 16px; line-height: 1.55; }
+.gx-dialog footer { display: flex; justify-content: flex-end; gap: 8px; padding: 0 16px 16px; }
+.gx-btn { min-width: 84px; border: 1px solid #8a8a8a; background: #f2f2f2; color: #111111; padding: 7px 16px; border-radius: 3px; font: bold 14px Arial, Helvetica, sans-serif; cursor: pointer; }
+.gx-btn:hover { background: #e6e6e6; }
+.gx-btn-primary { background: #12385f; color: #ffffff; border-color: #12385f; }
+.gx-btn-primary:hover { background: #0c2a49; }
+
+@media (max-width: 640px) {
+  .gx-title { width: 100%; }
+  .gx-stat .lbl { display: none; }
+}

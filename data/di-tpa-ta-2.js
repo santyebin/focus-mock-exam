@@ -4,11 +4,11 @@
   const B = (GM.BANK = GM.BANK || {});
 
   B.tpa = (B.tpa || []).concat([
-    { id: 'TPA09', sub: 'Quant', d: 6,
+    { id: 'TPA09', sub: 'Quant', d: 5,
       stem: R`A store sells a product at a price of p dollars per unit and sells q units per week. If the store raised the price by $2, it would sell 10 fewer units per week and its weekly revenue from the product would not change. If it lowered the price by $2, it would sell 20 more units per week and its weekly revenue would rise by $40. Select for <i>Price</i> the value of p and for <i>Units</i> the value of q. Make only two selections, one in each column.`,
       cols: [R`Price`, R`Units`], opts: [R`10`, R`20`, R`40`, R`50`, R`60`], ans: [0, 4],
       ex: R`(p + 2)(q − 10) = pq gives 2q = 10p + 20, so q = 5p + 10. (p − 2)(q + 20) = pq + 40 gives 20p − 2q = 80, so 10p − q = 40. Substituting: 5p − 10 = 40, p = 10, q = 60. Check: 12 × 50 = 600 = 10 × 60, and 8 × 80 = 640.` },
-    { id: 'TPA10', sub: 'Verbal', d: 4,
+    { id: 'TPA10', sub: 'Verbal', d: 3,
       stem: R`Smart thermostats reduce household energy use by learning when residents are away. Because most homes in the town of Corland are occupied all day by retirees, installing smart thermostats there would produce smaller energy savings than installing them in homes that are empty during working hours.<br><br>Select for <i>Required assumption</i> an assumption on which the argument depends, and select for <i>Weakens</i> the statement that, if true, would most weaken the argument. Make only two selections, one in each column.`,
       cols: [R`Required assumption`, R`Weakens`],
       opts: [R`Smart thermostats save energy mainly by reducing heating and cooling while a home is unoccupied.`,
@@ -17,15 +17,15 @@
         R`Most homes in Corland were built before 1980.`,
         R`Smart thermostats cost more than conventional thermostats.`], ans: [0, 2],
       ex: R`The argument expects smaller savings because Corland homes are rarely empty, which presupposes that savings come mainly from unoccupied periods. If equal savings come from sleep-schedule adjustments, the conclusion fails.` },
-    { id: 'TPA11', sub: 'Quant', d: 4,
+    { id: 'TPA11', sub: 'Quant', d: 3,
       stem: R`Alloy P is 30 percent copper by weight and alloy Q is 70 percent copper by weight. A metalworker melts together a kilograms of alloy P and \(40 - a\) kilograms of alloy Q to make 40 kilograms of an alloy that is x percent copper and contains 20 kilograms of copper. Select for <i>a</i> and for <i>x</i> the values consistent with this information. Make only two selections, one in each column.`,
       cols: [R`a`, R`x`], opts: [R`10`, R`20`, R`30`, R`40`, R`50`, R`60`], ans: [1, 4],
       ex: R`Copper: 0.3a + 0.7(40 − a) = 28 − 0.4a = 20, so a = 20. The mixture is 20 kg copper in 40 kg, so x = 50.` },
-    { id: 'TPA12', sub: 'Logic', d: 5,
+    { id: 'TPA12', sub: 'Logic', d: 4,
       stem: R`Five talks, J, K, L, M, and N, are scheduled one each in five consecutive time slots numbered 1 through 5. K is immediately before L. M is in an earlier slot than J. N is in slot 3 or slot 4. J is not in slot 5. Select for <i>Slot 1</i> the talk that must be in slot 1, and select for <i>Slot 5</i> the talk that must be in slot 5. Make only two selections, one in each column.`,
       cols: [R`Slot 1`, R`Slot 5`], opts: [R`J`, R`K`, R`L`, R`M`, R`N`], ans: [3, 2],
       ex: R`Slot 5 cannot hold J (stated), M (it precedes J), N (slot 3 or 4), or K (it precedes L), so it holds L, and K is in slot 4. Then N is in slot 3, and M and J fill slots 1 and 2 with M first.` },
-    { id: 'TPA13', sub: 'Quant', d: 4,
+    { id: 'TPA13', sub: 'Quant', d: 3,
       stem: R`Ana and Bo walk from the same starting point in the same direction along a straight path, each at a constant speed. Bo starts 30 minutes before Ana, and Ana catches up with Bo 1.5 hours after she starts. Ana walks 1 kilometer per hour faster than Bo. Select for <i>Ana</i> and for <i>Bo</i> their speeds, in kilometers per hour. Make only two selections, one in each column.`,
       cols: [R`Ana`, R`Bo`], opts: [R`3`, R`4`, R`4.5`, R`5`, R`6`], ans: [1, 0],
       ex: R`When they meet, Bo has walked 2 hours and Ana 1.5 hours over the same distance: 1.5a = 2b, so a = \(\frac{4}{3}\)b. With a − b = 1, b = 3 and a = 4.` },
@@ -34,7 +34,7 @@
   const YN = [R`Yes`, R`No`];
   const TF = [R`True`, R`False`];
   B.ta = (B.ta || []).concat([
-    { id: 'TA07', sub: 'Software', d: 6,
+    { id: 'TA07', sub: 'Software', d: 5,
       intro: R`The table shows data for six subscription software products sold by one company.`,
       cols: [R`Product`, R`Subscribers (thousands)`, R`Monthly price ($)`, R`Monthly churn rate (%)`, R`Support tickets per 1,000 subscribers`],
       rows: [[R`Atlas`, 48, 12, 3.1, 22], [R`Beacon`, 125, 8, 4.5, 15], [R`Cirrus`, 32, 25, 2.2, 30], [R`Delta`, 76, 15, 2.8, 18], [R`Ember`, 210, 5, 6.0, 9], [R`Flux`, 54, 20, 1.9, 26]],

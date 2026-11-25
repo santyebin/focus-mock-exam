@@ -16,6 +16,15 @@
 
   const SUBTOPIC_CAP = 3;
 
+  /*
+   * Question selection runs slightly ahead of the score estimate (SPEC.md §4). With the score prior alone, the
+   * estimate trails strong candidates for most of a 21-23 question section, so they were served questions below
+   * their level and answered ~80% correctly instead of the intended 55-65%.
+   */
+  const SEL_PRIOR_SD = 2; // wider prior for the selection estimate, so it moves faster than the score estimate
+  const TARGET_SHIFT = 0.25; // aim each question a little above the selection estimate (tuned with tools/simulate.js)
+  const PRETEST_BAND = 0.9; // unscored questions come from about one difficulty level either side of the target
+
   /* ---------- deterministic helpers ---------- */
   function hash01(str) {
     let h = 2166136261;
@@ -206,11 +215,13 @@
     const o = opts || {};
     const seed = o.seed != null ? o.seed : Math.floor(Math.random() * 2147483647);
     const rng = mulberry32(seed);
+    const fixed = Array.isArray(o.fixed) ? o.fixed.slice() : null; // fixed form: the same questions, in order, for everyone
     return {
       section: section,
       seed: seed,
-      nTotal: SECTIONS[section].n,
-      plan: buildPlan(section, rng, o.pretest == null ? 2 : o.pretest),
+      fixed: fixed,
+      nTotal: fixed ? fixed.length : SECTIONS[section].n,
+      plan: fixed ? [] : buildPlan(section, rng, o.pretest == null ? 2 : o.pretest),
       slot: 0,
       set: null,
       usedUnits: [],
@@ -219,7 +230,16 @@
       theta: 0,
       se: 1,
       priorSd: o.priorSd || 1,
+      thetaSel: 0,
+      selPriorSd: o.selPriorSd || SEL_PRIOR_SD,
+      targetShift: o.targetShift != null ? o.targetShift : TARGET_SHIFT,
     };
+  }
+
+  /** Ability the next question is aimed at. Sections saved before thetaSel existed fall back to theta. */
+  function target(st) {
+    const sel = st.thetaSel != null ? st.thetaSel : st.theta;
+    return sel + (st.targetShift != null ? st.targetShift : TARGET_SHIFT);
   }
 
   function scoredResponses(st, bank, useFirst) {
@@ -271,11 +291,17 @@
     if (!pool.length) return null;
     const capped = pool.filter((u) => (st.subCount[u.items[0].sub] || 0) < SUBTOPIC_CAP);
     if (capped.length) pool = capped;
-    if (slot.pretest) return pool[Math.floor(ctx.rng() * pool.length)];
+    const t = target(st);
+    if (slot.pretest) {
+      // Random, not adaptive, but near the candidate's level so an unscored question never stands out.
+      const near = pool.filter((u) => Math.abs(u.items[0].irt.b - t) <= PRETEST_BAND);
+      const from = near.length >= 3 ? near : pool;
+      return from[Math.floor(ctx.rng() * from.length)];
+    }
     // Wider random choice for the first questions, when the ability estimate is still rough
     // and everyone starts from the same point (keeps opening questions from being over-exposed).
     const k = st.records.length < 3 ? 6 : ctx.topK || 3;
-    return pickTop(rankByInfo(pool, st.theta, singleScore), k, ctx.rng);
+    return pickTop(rankByInfo(pool, t, singleScore), k, ctx.rng);
   }
 
   function pickSet(st, bank, slot, ctx) {
@@ -290,16 +316,17 @@
       }
       return s;
     };
-    return pickTop(rankByInfo(pool, st.theta, scoreFn), 3, ctx.rng);
+    return pickTop(rankByInfo(pool, target(st), scoreFn), 3, ctx.rng);
   }
 
   function pickInSet(st, bank) {
     const u = bank.unitsById[st.set.uid];
     const left = u.items.filter((it) => st.set.given.indexOf(it.id) < 0);
     if (!left.length) return null;
+    const t = target(st);
     let best = left[0], bestI = -1;
     left.forEach((it) => {
-      const I = GM.IRT.info(st.theta, it.irt);
+      const I = GM.IRT.info(t, it.irt);
       if (I > bestI) { bestI = I; best = it; }
     });
     return best;
@@ -309,6 +336,7 @@
   function nextQuestion(st, bank, context) {
     const ctx = Object.assign({ rng: Math.random, seen: new Set(), topK: 3 }, context || {});
     if (st.records.length >= st.nTotal) return null;
+    if (st.fixed) return registerRecord(st, bank.items[st.fixed[st.records.length]], false);
     let item = null;
     let pretest = false;
     let guard = 0;
@@ -349,6 +377,11 @@
         st.slot++;
       }
     }
+    return registerRecord(st, item, pretest);
+  }
+
+  function registerRecord(st, item, pretest) {
+    if (!item) return null;
     st.subCount[item.sub] = (st.subCount[item.sub] || 0) + 1;
     const rec = {
       n: st.records.length + 1,
@@ -371,6 +404,14 @@
     return rec;
   }
 
+  /** Section score with a ±1 standard-error band, on the 60-90 scale. */
+  function scoreBand(section, theta, se) {
+    return {
+      lo: Math.round(GM.Scoring.thetaToScore(section, theta - se)),
+      hi: Math.round(GM.Scoring.thetaToScore(section, theta + se)),
+    };
+  }
+
   /** Record the first (confirmed) answer to a question and update the ability estimate. */
   function submitAnswer(st, bank, rec, response) {
     const it = bank.items[rec.id];
@@ -378,9 +419,11 @@
     rec.response = clone(response);
     rec.correct = grade(it, response);
     if (!rec.pretest) {
-      const est = GM.IRT.eap(scoredResponses(st, bank, true), st.priorSd);
+      const responses = scoredResponses(st, bank, true);
+      const est = GM.IRT.eap(responses, st.priorSd);
       st.theta = est.theta;
       st.se = est.se;
+      st.thetaSel = GM.IRT.eap(responses, st.selPriorSd || SEL_PRIOR_SD).theta;
     }
     rec.thetaAfter = st.theta;
     rec.seAfter = st.se;
@@ -404,6 +447,7 @@
     const score = Math.max(60, base - penalty);
     const display = Math.round(score);
     const scored = st.records.filter((r) => !r.pretest && r.response != null);
+    const band = scoreBand(st.section, est.theta, est.se);
     return {
       section: st.section,
       theta: est.theta,
@@ -413,6 +457,8 @@
       unanswered: unanswered,
       score: score,
       display: display,
+      lo: Math.max(60, Math.round(band.lo - penalty)),
+      hi: Math.max(60, Math.round(band.hi - penalty)),
       percentile: GM.Scoring.percentile(st.section, display),
       scoredCount: scored.length,
       scoredCorrect: scored.filter((r) => r.correct).length,
@@ -427,7 +473,7 @@
   GM.TYPE_NAMES = TYPE_NAMES;
   GM.CAT = {
     buildBank, irtParams, grade, isAnswered, correctAnswer, expectedParts,
-    buildPlan, createSection, nextQuestion, submitAnswer, editAnswer, finalize,
+    buildPlan, createSection, nextQuestion, submitAnswer, editAnswer, finalize, scoreBand,
     mulberry32, hash01,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

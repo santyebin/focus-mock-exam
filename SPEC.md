@@ -44,7 +44,7 @@ The real exam's content specification is not published question-by-question. The
 | C | 6 | 4 | 4 | 3 | 3 |
 | D | 7 | 4 | 4 | 2 | 3 |
 
-**Unscored (pretest) questions:** the real exam mixes in unscored trial questions that look identical to scored ones. The mock does the same by default: 2 per section, placed on single-question slots, chosen at random difficulty (not adaptively), excluded from scoring. They are revealed only in the post-exam report. Can be switched off in settings.
+**Unscored (pretest) questions:** the real exam mixes in unscored trial questions that look identical to scored ones. The mock does the same by default: 2 per section, placed on single-question slots, chosen at random (not adaptively) from questions within about one difficulty level of the candidate's current level, so they never stand out as unusually easy or hard, and excluded from scoring. They are revealed only in the post-exam report. Can be switched off in settings.
 
 ## 3. Item model (IRT, three-parameter logistic)
 
@@ -79,6 +79,8 @@ Fisher information (used for item selection):
 | 5 | very hard | +1.5 | ~ 675 |
 | 6 | extreme | +2.25 | ~ 725+ |
 
+Rate a question by who gets it right, not by how many steps its solution takes: a d5 question should defeat most candidates below the 90th percentile, and a d6 question most candidates below the 98th. Over-rated questions do double damage: strong candidates are served them as "hard" and find them easy, and every right answer earns too much credit, inflating the score. In Nov 2026 every label was re-rated against this table after a tester reported exactly that. 55 of the 106 Quant labels and 105 of the 194 Verbal and Data Insights labels moved down, most by one level; several Reading Comprehension questions moved two or three levels, because they only paraphrase one sentence of the passage. 44 harder questions were added: 22 in Quant, and 8 Critical Reasoning, 2 passages, and 6 Data Sufficiency in the other sections. The hardest tier in Verbal and Data Insights is still thin (§4).
+
 Once real response data exists, the parameters should be re-estimated (marginal maximum likelihood) and these values replaced.
 
 ## 4. Adaptive algorithm (question selection)
@@ -89,13 +91,22 @@ The real exam is adaptive **question by question**, and the first question of ea
 2. **Plan the section skeleton** from the blueprint variant: a random order of slots (e.g. `CR, RC×3, CR, CR, RC×4, …` or `DS, GI, TPA, DS, MSR×3, …`). No more than two identical single-question types in a row; sets are separated.
 3. **Fill each slot adaptively**:
    * Candidate pool = unused questions of the slot's type/topic, preferring questions this browser has never seen in earlier attempts, honouring the sub-topic cap.
-   * Score each candidate by Fisher information at the current θ̂.
+   * Score each candidate by Fisher information at the **target ability** θ̂_sel + 0.25 (step 5): slightly above the current estimate, so each question is a stretch rather than a comfortable one.
    * **Exposure control (randomesque)**: pick at random among the 3 most informative candidates (6 for the first three questions of a section, when every candidate starts from the same estimate; 3 for passages and MSR sets), so two candidates at the same ability still see different questions.
-4. **Sets (RC passages, MSR)**: a passage is chosen by the mean information of its best *k* questions at θ̂. Inside an RC passage the next question is chosen adaptively from that passage's questions (4 authored, 3 or 4 delivered); MSR questions are delivered in authored order.
-5. **Update θ̂ after every scored response** using EAP (expected a posteriori) with an N(0, 1) prior, numerical quadrature from −4 to +4 in 0.05 steps. EAP is stable from the very first answer, unlike maximum likelihood which is undefined until the candidate has both a right and a wrong answer.
-6. Pretest slots get a random unused question of the right type and do not update θ̂.
+4. **Sets (RC passages, MSR)**: a passage is chosen by the mean information of its best *k* questions at the target ability. Inside an RC passage the next question is chosen adaptively from that passage's questions (4 authored, 3 or 4 delivered); MSR questions are delivered in authored order.
+5. **Update θ̂ after every scored response** using EAP (expected a posteriori) with an N(0, 1) prior, numerical quadrature from −4 to +4 in 0.05 steps. EAP is stable from the very first answer, unlike maximum likelihood which is undefined until the candidate has both a right and a wrong answer. A second estimate, **θ̂_sel**, is computed the same way with a wider N(0, 2²) prior. It reacts faster to early answers and is used only to choose questions; scores and the report's ability path use θ̂. **[model]**
+6. Pretest slots get a random unused question of the right type whose b is within 0.9 of the target ability (about one difficulty level), or any unused question of that type if fewer than 3 qualify. They do not update either estimate.
 
-Net effect: candidates answer roughly 55–65% of questions correctly regardless of ability. The score depends on how hard the questions you got right were, not on the count of right answers.
+Net effect, from `tools/simulate.js`: the share of scored questions answered correctly stays fairly flat across ability, as on a well-targeted adaptive test.
+
+| Candidate (percentile) | Quant | Verbal | Data Insights |
+|---|---|---|---|
+| 50th | 59% | 59% | 49% |
+| 84th | 62% | 69% | 59% |
+| 93rd | 66% | 75% | 71% |
+| 98th | 68% | 83% | 82% |
+
+Data Insights runs lower for average candidates because multi-part questions give almost no credit for guessing. In Verbal and Data Insights the top few percent still answer 75–83% correctly, because after the re-rating few questions in those sections are hard enough for them, and their scores come out about a point low (θ bias about −0.2). More d5–d6 Verbal and Data Insights questions would fix both. Before θ̂_sel and the target shift existed, the estimate trailed strong candidates for most of the section and the 98th percentile answered 79–84% correctly, so the test felt as if it was not adapting. The score depends on how hard the questions you got right were, not on the count of right answers.
 
 ## 5. Scoring
 

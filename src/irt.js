@@ -36,7 +36,8 @@
       for (let i = 0; i < responses.length; i++) {
         const r = responses[i];
         const P = prob(t, r);
-        lp += r.u ? Math.log(P) : Math.log(1 - P);
+        // u may be fractional (an expected response), used by the pacing coach's "what if" estimates
+        lp += r.u === 1 ? Math.log(P) : r.u === 0 ? Math.log(1 - P) : r.u * Math.log(P) + (1 - r.u) * Math.log(1 - P);
       }
       logPost[g] = lp;
       if (lp > max) max = lp;
